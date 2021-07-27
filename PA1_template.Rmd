@@ -7,19 +7,57 @@ output:
 
 
 ## Loading and preprocessing the data
-
-
+if(!file.exists("activity.csv") ) {
+          unzip("activity.zip")
+ }       
+raw_data <- read.csv("activity.csv", header = TRUE)
+main_data <- na.omit(raw_data)
 
 ## What is mean total number of steps taken per day?
+step_in_a_day <- aggregate(main_data$steps, by = list(Steps.Date = main_data$date), FUN = "sum")
+hist(step_in_a_day$x, col = "green", breaks = 20,
+main = "Total number of steps taken eacch day",
+xlab = "Number of steps per day")
 
+mean_step <- mean(step_in_a_day[,2])
+print(mean_steps)
 
+median_step <- median(step_in_a_day[,2])
+print(median_step)
 
 ## What is the average daily activity pattern?
-
-
+ave_day <- aggregate(main_data$steps,
+                     by = list(Interval = main_data$interval),
+                     FUN = "mean")
+plot(ave_day$Interval, aver_day$x, type ="1",
+     main = "Average daily activity pattern",
+     ylab = "Average number of steps taken",
+     xlab = "5-min Intervals")
+     
+inter <- which.max(ave_day$x)
+max_interval <- ave_day[inter_row, 1]
+print(max_inter)
 
 ## Imputing missing values
+NA_numb <- length(which(is.na(raw_data$steps)))
+print (NA_numb)
 
+library(Hmisc)
+raw_data_filled <- raw_data
+raw_data_filled$steps <- impute(raw_data$steps, fun=mean)
 
-
+step_in_a_day_noNA <- aggregate(raw_data_filled$steps,
+                                by = list(Steps.date = raw_data_filled$date),
+                                FUN = "sum")
+hist(step_in_a_day_noNA$x, col = "green",
+     breaks = 20,
+     main = "Total number of steps taken each day",
+     xlab = "Number of steps per day")
+ mean_steps_noNA <- mean(step_in_a_day_noNA[,2])
+ print(mean_steps_noNA)
+ 
+ median_steps_noNA <- median(step_in_a_day_noNA[,2])
+ print(median_steps_noNA)
 ## Are there differences in activity patterns between weekdays and weekends?
+raw_data_filled$date <- as.Date(raw_data_filled$date)
+raw_data_filled$weekday <-

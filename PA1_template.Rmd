@@ -59,5 +59,18 @@ hist(step_in_a_day_noNA$x, col = "green",
  median_steps_noNA <- median(step_in_a_day_noNA[,2])
  print(median_steps_noNA)
 ## Are there differences in activity patterns between weekdays and weekends?
-raw_data_filled$date <- as.Date(raw_data_filled$date)
-raw_data_filled$weekday <-
+weekdays_list <- c("Monday", "Tuesday", "Wednesday", "Thursday", "Friday")
+raw_data_filled$day_of_week <- weekdays(raw_data_filled$date)
+raw_data_filled$type_of_day <-
+  factor(raw_data_filled$day_of_week %in% weekdays_list,
+         levels = c(FALSE, TRUE),
+         labels = c("weekend", "weekday"))
+         
+weekday_data <- filled_data[raw_data_filled$type_of_day == "weekday",]
+weekend_data <- filled_data[raw_data_filled$type_of_day == "weekend",]
+weekday_steps <- get_steps_per_interval(weekday_data)
+weekend_steps <- get_steps_per_interval(weekend_data)         
+weekday_steps$type_of_day <- factor(TRUE, levels = c(FALSE, TRUE), labels = c("weekend", "weekday"))
+weekend_steps$type_of_day <- factor(FALSE, levels = c(FALSE, TRUE), labels = c("weekend", "weekday"))
+weekday_weekend_steps <- rbind(weekday_steps, weekend_steps)
+xyplot(steps ~ interval | type_of_day, data = weekday_weekend_steps, layout = c(1,2), type = "l", xlab = "Interval", ylab = "Number of steps")

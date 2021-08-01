@@ -5,7 +5,6 @@ output:
     keep_md: true
 ---
 
-install.packages("Hmisc")
 library(ggplot2)
 library(lattice)
 

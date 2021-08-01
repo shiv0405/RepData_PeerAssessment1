@@ -5,38 +5,38 @@ output:
     keep_md: true
 ---
 
+install.packages("Hmisc")
+library(ggplot2)
+library(lattice)
 
 ## Loading and preprocessing the data
-if(!file.exists("activity.csv") ) {
-          unzip("activity.zip")
- }       
-raw_data <- read.csv("activity.csv", header = TRUE)
-main_data <- na.omit(raw_data)
+raw_data <- read.csv(unz("C:\Users\lenovo\Documents\activity.zip", "activity.csv"))
+imp_data <- na.omit(raw_data)
 
 ## What is mean total number of steps taken per day?
-step_in_a_day <- aggregate(main_data$steps, by = list(Steps.Date = main_data$date), FUN = "sum")
-hist(step_in_a_day$x, col = "green", breaks = 20,
-main = "Total number of steps taken eacch day",
-xlab = "Number of steps per day")
+step_a_day <- aggregate(imp_data$steps, by = list(Steps.Date = imp_data$date), FUN = "sum")
+hist(step_a_day$x, col = "green", breaks = 20,
+     main = "Total number of steps taken each day",
+     xlab = "Number of steps per day")
 
-mean_step <- mean(step_in_a_day[,2])
-print(mean_steps)
+average_step <- mean(step_a_day[,2])
+print(average_step)
 
-median_step <- median(step_in_a_day[,2])
+median_step <- median(step_a_day[,2])
 print(median_step)
 
 ## What is the average daily activity pattern?
-ave_day <- aggregate(main_data$steps,
-                     by = list(Interval = main_data$interval),
+ave_day <- aggregate(imp_data$steps,
+                     by = list(Interval = imp_data$interval),
                      FUN = "mean")
-plot(ave_day$Interval, aver_day$x, type ="1",
+plot(ave_day$Interval, ave_day$x, type = "l",
      main = "Average daily activity pattern",
      ylab = "Average number of steps taken",
      xlab = "5-min Intervals")
-     
+
 inter <- which.max(ave_day$x)
-max_interval <- ave_day[inter_row, 1]
-print(max_inter)
+max_interval <- ave_day[inter, 1]
+print(max_interval)
 
 ## Imputing missing values
 NA_numb <- length(which(is.na(raw_data$steps)))
@@ -46,31 +46,31 @@ library(Hmisc)
 raw_data_filled <- raw_data
 raw_data_filled$steps <- impute(raw_data$steps, fun=mean)
 
-step_in_a_day_noNA <- aggregate(raw_data_filled$steps,
+step_noNA <- aggregate(raw_data_filled$steps,
                                 by = list(Steps.date = raw_data_filled$date),
                                 FUN = "sum")
-hist(step_in_a_day_noNA$x, col = "green",
+hist(step_noNA$x, col = "green",
      breaks = 20,
      main = "Total number of steps taken each day",
      xlab = "Number of steps per day")
- mean_steps_noNA <- mean(step_in_a_day_noNA[,2])
- print(mean_steps_noNA)
- 
- median_steps_noNA <- median(step_in_a_day_noNA[,2])
- print(median_steps_noNA)
+average_noNA <- mean(step_noNA[,2])
+print(average_noNA)
+
+median_noNA <- median(step_noNA[,2])
+print(median_noNA)
 ## Are there differences in activity patterns between weekdays and weekends?
-weekdays_list <- c("Monday", "Tuesday", "Wednesday", "Thursday", "Friday")
-raw_data_filled$day_of_week <- weekdays(raw_data_filled$date)
-raw_data_filled$type_of_day <-
-  factor(raw_data_filled$day_of_week %in% weekdays_list,
-         levels = c(FALSE, TRUE),
-         labels = c("weekend", "weekday"))
-         
-weekday_data <- filled_data[raw_data_filled$type_of_day == "weekday",]
-weekend_data <- filled_data[raw_data_filled$type_of_day == "weekend",]
-weekday_steps <- get_steps_per_interval(weekday_data)
-weekend_steps <- get_steps_per_interval(weekend_data)         
-weekday_steps$type_of_day <- factor(TRUE, levels = c(FALSE, TRUE), labels = c("weekend", "weekday"))
-weekend_steps$type_of_day <- factor(FALSE, levels = c(FALSE, TRUE), labels = c("weekend", "weekday"))
-weekday_weekend_steps <- rbind(weekday_steps, weekend_steps)
-xyplot(steps ~ interval | type_of_day, data = weekday_weekend_steps, layout = c(1,2), type = "l", xlab = "Interval", ylab = "Number of steps")
+raw_data_filled$date <- as.Date(raw_data_filled$date)
+raw_data_filled$weekday <- weekdays(raw_data_filled$date)
+raw_data_filled$type_of_day <- ifelse(raw_data_filled$weekday=="Saturday" | 
+                                        raw_data_filled$weekday=="Sunday","Weekend","Weekday")
+raw_data_filled$type_of_day <- factor(raw_data_filled$type_of_day)
+
+data_of_day <- aggregate(steps ~ interval + type_of_day, data=raw_data_filled, mean)
+
+ggplot(data_of_day, aes(interval, steps)) +
+       geom_line() +
+      facet_grid(type_of_day ~ .) +
+      xlab("5-minute intervals") +
+      ylab("Average number of steps taken") +
+      ggtitle("Weekdays and weekends activity patterns")
+      
